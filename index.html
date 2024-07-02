@@ -62,6 +62,8 @@
       <option value="60" selected>60</option>
     </select>
     <div id="apiProdStatusContainer"></div>
+    <hr />
+    <div id="log"></div>
 
     <script>
       const apisNPE = [
@@ -76,6 +78,7 @@
 
       let checkInterval = 60000;
       let intervalId;
+      const logDiv = document.getElementById("log");
 
       function checkApiAvailability() {
         const apiStatusContainer =
@@ -85,7 +88,7 @@
         apisNPE.forEach((api) => {
           fetch(api, { method: "HEAD", mode: "no-cors" })
             .then((response) => {
-              if (response) {
+              if (response.ok) {
                 updateStatus(api, true, "apiStatusContainer");
               } else {
                 updateStatus(api, false, "apiStatusContainer");
