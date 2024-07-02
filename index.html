@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MegyeriHealth</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .api-status {
+            margin: 10px 0;
+        }
+        .available {
+            color: green;
+            font-size: 1.2em;
+        }
+        .unavailable {
+            color: red;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <p><strong>SCM</strong></p>
+    <a href="https://megyeri-npe-customerapi.scm.azurewebsites.net">CUSTOMER SCM</a>
+    <br>
+    <a href="https://megyeri-npe-adminapi.scm.azurewebsites.net">ADMIN SCM</a>
+    <br>
+    <br>
+    <br>
+    
+    <p><strong>NPE</strong></p>
+    <label for="intervalSelect">Refresh Time (seconds):</label>
+    <select id="intervalSelect">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="30">30</option>
+        <option value="60" selected>60</option>
+    </select>
+    <div id="apiStatusContainer"></div>
+
+    <p><strong>PROD</strong></p>
+    <label for="intervalSelect">Refresh Time (seconds):</label>
+    <select id="intervalSelect">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="30">30</option>
+        <option value="60" selected>60</option>
+    </select>
+    <div id="apiProdStatusContainer"></div>
+
+
+    <script>
+        const apisNPE = [
+            "https://megyeri-customer-npe.api.marknetwork.hu",
+            "https://megyeri-admin-npe.api.marknetwork.hu",
+            "https://megyeri-customer-npe.marknetwork.hu",
+            "https://megyeri-admin-npe.marknetwork.hu"
+        ];
+
+        let checkInterval = 60000; // Default to 5 seconds
+        let intervalId;
+
+        function checkApiAvailability() {
+            const apiStatusContainer = document.getElementById('apiStatusContainer');
+            apiStatusContainer.innerHTML = '';
+
+            apisNPE.forEach(api => {
+                fetch(api, { method: 'HEAD' })
+                    .then(response => {
+                        if (response.ok) {
+                            updateStatus(api, true);
+                        } else {
+                            updateStatus(api, false);
+                        }
+                    })
+                    .catch(() => {
+                        updateStatus(api, false);
+                    });
+            });
+        }
+
+        function updateStatus(api, isAvailable) {
+            const apiStatusContainer = document.getElementById('apiStatusContainer');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'api-status';
+            statusDiv.innerHTML = `<a href="${api}">${api}</a> ` +
+                                  (isAvailable ? '<span class="available">Available</span>' : '<span class="unavailable">Unavailable</span>');
+            apiStatusContainer.appendChild(statusDiv);
+        }
+        function setNewInterval() {
+            clearInterval(intervalId);
+            intervalId = setInterval(checkApiAvailability, checkInterval);
+        }
+
+        document.getElementById('intervalSelect').addEventListener('change', function() {
+            checkInterval = this.value * 1000;
+            setNewInterval();
+        });
+
+        // Initial setup
+        intervalId = setInterval(checkApiAvailability, checkInterval);
+        checkApiAvailability();
+    </script>
+</body>
+</html>
